@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Halaman Utama Mochil</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: url('BG.png') no-repeat center center;
+      background-size: cover;
+      position: relative;
+      font-family: sans-serif;
+    }
+
+    /* Container untuk dekorasi bawah */
+    .decor-container {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 25%;
+      overflow: hidden;
+    }
+
+    .item {
+      position: absolute;
+      opacity: 0.9;
+      animation: floatRandom 5s infinite ease-in-out;
+      transition: transform 0.3s ease;
+      will-change: transform;
+    }
+
+    @keyframes floatRandom {
+      0% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-10px) translateX(5px); }
+      100% { transform: translateY(0) translateX(0); }
+    }
+
+    /* Tombol Mulai */
+    .start-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .start-btn img {
+      width: 220px;
+      height: auto;
+    }
+
+    .start-btn:active {
+      transform: translateX(-50%) scale(0.95);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dekorasi Mochil & Love -->
+  <div class="decor-container" id="decor"></div>
+
+  <!-- Tombol Mulai -->
+  <button class="start-btn" onclick="mulaiGame()">
+    <img src="TMBL.png" alt="Mulai Game">
+  </button>
+
+  <script>
+    const decorContainer = document.getElementById('decor');
+    const totalMochil = 15;
+    const totalLove = 15;
+
+    function createItem(src) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.classList.add('item');
+      img.style.width = (Math.random() * 40 + 30) + 'px';
+      img.style.left = Math.random() * 100 + '%';
+      img.style.bottom = (Math.random() * 10) + 'px';
+      img.style.animationDuration = (Math.random() * 3 + 3) + 's';
+      decorContainer.appendChild(img);
+    }
+
+    for (let i = 0; i < totalMochil; i++) {
+      createItem('MOCHIL1.png');
+    }
+    for (let i = 0; i < totalLove; i++) {
+      createItem('LOVE.png');
+    }
+
+    function mulaiGame() {
+      window.location.href = 'game.html';
+    }
+
+    // ==== Fungsi Gerak Bersama ====
+    function moveItems(deltaX, deltaY) {
+      const items = document.querySelectorAll('.item');
+      items.forEach(item => {
+        item.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        setTimeout(() => {
+          item.style.transform = 'translate(0, 0)';
+        }, 300);
+      });
+    }
+
+    // ==== Efek Mantul Saat Kena ====
+    function bounceItem(item, dirX, dirY) {
+      item.style.transform = `translate(${dirX * 20}px, ${dirY * 20}px) scale(1.2)`;
+      setTimeout(() => {
+        item.style.transform = 'translate(0, 0) scale(1)';
+      }, 300);
+    }
+
+    // ==== Kontrol Swipe (Mobile) ====
+    let startX, startY;
+    window.addEventListener('touchstart', function(e) {
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+    }, false);
+
+    window.addEventListener('touchend', function(e) {
+      const touch = e.changedTouches[0];
+      let deltaX = touch.clientX - startX;
+      let deltaY = touch.clientY - startY;
+
+      moveItems(deltaX / 2, deltaY / 2);
+
+      // Cek tabrakan di posisi akhir swipe
+      document.querySelectorAll('.item').forEach(item => {
+        const rect = item.getBoundingClientRect();
+        if (
+          touch.clientX >= rect.left &&
+          touch.clientX <= rect.right &&
+          touch.clientY >= rect.top &&
+          touch.clientY <= rect.bottom
+        ) {
+          bounceItem(item, deltaX > 0 ? 1 : -1, deltaY > 0 ? 1 : -1);
+        }
+      });
+    }, false);
+
+    // ==== Kontrol Cursor (Desktop) ====
+    window.addEventListener('mousemove', function(e) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const deltaX = (e.clientX - centerX) / 20;
+      const deltaY = (e.clientY - centerY) / 20;
+
+      moveItems(deltaX, deltaY);
+
+      // Cek tabrakan mouse
+      document.querySelectorAll('.item').forEach(item => {
+        const rect = item.getBoundingClientRect();
+        if (
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom
+        ) {
+          bounceItem(item, deltaX > 0 ? 1 : -1, deltaY > 0 ? 1 : -1);
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
